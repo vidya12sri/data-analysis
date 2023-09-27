@@ -48,3 +48,35 @@ remove_outliers <- function(df, cols = names(df)) {
 # removing outliers of data
 trainingdata <- remove_outliers(trainingdata, c('L', 'H', 'W'))
 
+# boxplot after removing the outliers
+boxplot(trainingdata[,c('L', "H","W")],
+horizontal=TRUE,
+ names = c("Length", "Height","Width"))
+ # Making one variable binary for prediction
+trainingdata$ID_binary = ifelse(trainingdata$ID== "subterraneus",1,0)
+# prediction using glm model
+model <- glm(ID_binary ~ L + H + W ,data = trainingdata, family= 'binomial')
+summary(model)
+# testing the model with trainingdata
+trainingdata$pred_values <-predict(model, type = "response")
+trainingdata$final_pred_values <- ifelse(trainingdata$pred_values < 0.5,
+"Multiplex", "Subterraneus")
+# Creating a confusion matrix
+model_pred <-predict(model, type = "response")
+pred_confusion_matrix <- ifelse(model_pred <= 0.55, "Multiplex",
+"Subterraneus")
+predicted_values <- data.frame(Predicted = trainingdata$ID, true= pred_confusion_matrix )
+confusion_matrix<-table(predicted_values)
+confusion_matrix
+# Checking the accuracy of the model
+model_accuracy<-
+sum(confusion_matrix[1,2]+confusion_matrix[2,1])/sum(confusion_matrix)
+model_accuracy <-1-model_accuracy
+model_accuracy
+# Predicting the unknown species using the original model
+testingdata1$pred_values <- predict(model, testingdata1 ,
+type="response")
+testingdata1$predicted_species <- ifelse(testingdata1$pred_values < 0.5,
+"Multiplex", "Subterraneus")
+head(testingdata1)
+table(testingdata1["predicted_species"])
