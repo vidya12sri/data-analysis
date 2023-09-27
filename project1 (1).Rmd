@@ -28,6 +28,7 @@ colnames(testingdata1)[3] <- "L"
 colnames(testingdata1)[4] <- "H"
 colnames(testingdata1)[5] <- "W"
 ```
+# To check outliers
 ```{r}
 boxplot(trainingdata[,c('L', "H","W")],
 horizontal=TRUE,
@@ -59,6 +60,7 @@ remove_outliers <- function(df, cols = names(df)) {
 # removing outliers of data
 trainingdata <- remove_outliers(trainingdata, c('L', 'H', 'W'))
 ```
+# boxplot after removing outliers
 ```{r}
 boxplot(trainingdata[,c('L', "H","W")],
 horizontal=TRUE,
@@ -69,14 +71,10 @@ horizontal=TRUE,
 # Making one variable binary for prediction
 trainingdata$ID_binary = ifelse(trainingdata$ID== "subterraneus",1,0)
 ```
-
+using glm regression model for training data
 ```{r}
 model <- glm(ID_binary ~ L + H + W ,data = trainingdata, family= 'binomial')
 summary(model)
-```
-```{r}
-Stepwise_AIC_model <- step(model)
-summary(Stepwise_AIC_model)
 ```
 ```{r}
 # testing the model with trainingdata
@@ -104,14 +102,6 @@ model_accuracy
 ```
 
 ```{r}
-cat("Cross validation with 10 fold: ")
-## Cross validation with 10 fold:
-library(boot)
-CV1 <- sum(cv.glm(trainingdata,model, K = 10)$delta[1])
-CV1
-```
-
-```{r}
 # Predicting the unknown species using the original model
 testingdata1$pred_values <- predict(model, testingdata1 ,
 type="response")
@@ -122,17 +112,5 @@ head(testingdata1)
 
 ```{r}
 table(testingdata1["predicted_species"])
-```
-
-```{r}
-# annotated data
-# Compute the analysis of variance
-data_anova <- aov(ID_binary ~ L + H + W, data=trainingdata) 
-# Summary of the analysis
-summary(data_anova)
-```
-
-```{r}
-
 ```
 
